@@ -1,0 +1,49 @@
+const searchInput = document.getElementById('searchInput');
+const searchResults = document.getElementById('searchResults');
+let timeoutId;
+
+searchInput.addEventListener('input', function() {
+    clearTimeout(timeoutId);
+    timeoutId = setTimeout(() => {
+        const searchTerm = searchInput.value;
+        if (searchTerm.trim() !== '') {
+            fetchSearchResults(searchTerm);
+        } else {
+            searchResults.innerHTML = '';
+        }
+    }, 500);
+});
+
+function fetchSearchResults(searchTerm) {
+    const url = '/search/?search=' + encodeURIComponent(searchTerm);
+    fetch(url)
+        .then(response => response.json())
+        .then(data => {
+            let searchResultsHTML = '';
+            if (data.length > 0) {
+                searchResultsHTML = '<h2>Search Results</h2><ul>';
+                data.forEach(result => {
+                    const imageUrl = result.image_url;
+                    
+                    searchResultsHTML += `
+                    <a href="/Creator_profile/${result.id}/">
+                        <li>
+                            <img src="${imageUrl}" alt="User Image" width="50" height="50">
+                            ${result.last_name}
+                        </li>
+                    </a>`;
+
+                    
+                });
+                searchResultsHTML += '</ul>';
+            } else {
+                searchResultsHTML = '<p>No users found.</p>';
+            }
+
+            searchResults.innerHTML = searchResultsHTML;
+        })
+        .catch(error => {
+            console.error('Error:', error);
+        });
+}
+
